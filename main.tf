@@ -30,7 +30,7 @@ resource  "aws_s3_bucket" "s3_bkend_store" {
 }
 ####### VPC #######
 
-/*resource "aws_vpc" "vpc_demo" {
+resource "aws_vpc" "vpc_demo" {
   cidr_block                       = var.cidr
   instance_tenancy                 = var.instance_tenancy
   enable_dns_hostnames             = var.enable_dns_hostnames
@@ -275,6 +275,36 @@ resource "aws_instance" "jenkins" {
   tags = {
     Name = "jenkins"
   }
+
+  user_data = <<EOF
+		#! /bin/bash
+                sudo yum update -y
+		sudo yum install -y httpd.x86_64
+		sudo service httpd start
+		sudo service httpd enable
+		echo "<h1>Deployed via Terraform</h1>" | sudo tee /var/www/html/index.html
+    yum install java-1.8.0-openjdk-devel -y
+    curl --silent --location http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo | sudo tee /etc/yum.repos.d/jenkins.repo
+    sudo rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
+    yum install -y jenkins
+    systemctl start jenkins
+    systemctl status jenkins
+    systemctl enable jenkins
+
+    sudo apt install apt-transport-https ca-certificates curl software-properties-common
+
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+
+    apt-cache policy docker-ce
+
+    sudo apt update
+
+    sudo apt install docker-ce
+
+    sudo systemctl status docker
+	   EOF
 }
 
 resource "aws_instance" "app" {
@@ -288,4 +318,26 @@ resource "aws_instance" "app" {
   tags = {
     Name = "app"
   }
-}*/
+
+  user_data = <<EOF
+		#! /bin/bash
+                sudo yum update -y
+		sudo yum install -y httpd.x86_64
+		sudo service httpd start
+		sudo service httpd enable
+	
+    sudo apt install apt-transport-https ca-certificates curl software-properties-common
+
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+
+    apt-cache policy docker-ce
+
+    sudo apt update
+
+    sudo apt install docker-ce
+
+    sudo systemctl status docker
+	   EOF
+}
